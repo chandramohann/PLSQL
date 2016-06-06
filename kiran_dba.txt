@@ -1,0 +1,78 @@
+
+dbhome
+
+select name from v$datafile;
+ /oracle/oradata/SKELDEV/skeleton01.dbf
+ 
+df -k /oracle/oradata/
+803576800 541420800 220678268 72%
+
+create directory full_DB_metadata as '/oracle/oradata/';
+grant read,write on full_DB_metadata to SKELET;
+
+expdp dumpfile=full_DB_metadata.dmp logfile=expdb_full_DB_metadata.log directory=full_DB_metadata full=y
+
+expdp skelet/skelet@skeltest SCHEMAS= 'SKELET' dumpfile=full_DB_metadata.dmp logfile=expdb_full_DB_metadata.log directory=full_DB_metadata
+
+
+echo $ORACLE_SID
+export ORACLE_SID=<SID_name>
+cd $ORACLE_HOME/rdbms/admin/
+
+export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
+
+
+-------
+
+
+
+exp SYSTEM/manager FIlE=skeldev.dmp OWNER=SKELET
+
+
+expdp username/password@servicename DIRECTORY=dpump DUMPFILE=dumpfile.DMP
+FULL=y LOGFILE=logfile.LOG 
+
+
+
+
+kiran gowda is online.
+kiran: create directory expdp_full_metadata as '<path of the directory>;
+Sent at 6:21 PM on Tuesday
+Calling kiran gowda at 6:25 PM on Tuesday
+kiran: df -k
+chandra: [oracle@skeldbtest home]$ df -k
+Filesystem 1K-blocks Used Available Use% Mounted on
+/dev/mapper/VolGroup00-LogVol00
+803576800 541420776 220678292 72% /
+/dev/sda1 101086 15530 80337 17% /boot
+tmpfs 12272332 0 12272332 0% /dev/shm
+q
+
+df -k
+
+DBMS_METADATA
+dbms_metadata.set_transform_param( DBMS_METADATA.SESSION_TRANSFORM, 'SQLTERMINATOR', TRUE );
+
+
+dbhome
+
+kiran: select name from v$datafile;
+chandra: /oracle/oradata/SKELDEV/skeleton01.dbf
+kiran: df -k /oracle/oradata/
+chandra: 803576800 541420800 220678268 72%
+kiran: create directory full_DB_metadata as '/oracle/oradata/';
+grant read,write on full_DB_metadata to system;
+expdp dumpfile=full_DB_metadata.dmp logfile=expdb_full_DB_metadata.log directory=full_DB_metadata full=y
+Sent at 6:39 PM on Tuesday
+kiran: echo $oracle_sid
+echo $ORACLE_SID
+export ORACLE_SID=<SID_name>
+cd $ORACLE_HOME/rdbms/admin/
+Sent at 6:45 PM on Tuesday
+chandra: export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/produ ct/10.2.0/server
+
+
+
+
+
+expdp dumpfile=full_DB_metadata.dmp logfile=expdb_full_DB_metadata.log directory=full_DB_metadata full=y CONTENT=METADATA_ONLY

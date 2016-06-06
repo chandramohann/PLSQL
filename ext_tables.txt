@@ -1,0 +1,18 @@
+CREATE OR REPLACE DIRECTORY data_dir AS '/u01/app/oracle/oradata/CDR/data';
+/
+CREATE OR REPLACE DIRECTORY log_dir AS '/u01/app/oracle/oradata/CDR/log';
+/
+CREATE OR REPLACE DIRECTORY bad_dir AS '/u01/app/oracle/oradata/CDR/bad';
+/
+CREATE OR REPLACE DIRECTORY list_dir AS '/u01/app/oracle/oradata/CDR/cdrlist';
+/
+GRANT READ ON DIRECTORY dat_dir TO CDR;
+/
+GRANT WRITE ON DIRECTORY log_dir TO CDR;
+/
+GRANT WRITE ON DIRECTORY bad_dir TO CDR;
+/
+GRANT WRITE ON DIRECTORY list_dir TO CDR;
+/
+GRANT READ ON DIRECTORY list_dir TO CDR;
+/
