@@ -1,0 +1,90 @@
+create or replace PROCEDURE           "SP_REFRESH_TB_COPY" AS
+
+   SQL_STMT     VARCHAR2(2000);
+   ERRMSG       VARCHAR2(2000);
+   L_TGT_SCHEMA VARCHAR2(2000) := 'tb_copy';
+   L_TABLE      VARCHAR2(2000);
+   L_COUNT      NUMBER;
+   L_SCHEMA     VARCHAR2(2000) := NULL;
+   L_CONDITION  VARCHAR2(2000) := NULL;
+
+   CURSOR CUR_DWH_SOURCE IS
+      SELECT *
+        FROM TB_COPY.DWH_TB_COPY
+       WHERE ENABLED = 'T'
+       ORDER BY PRIORITY DESC;
+
+BEGIN
+
+   FOR CUR_REC IN CUR_DWH_SOURCE LOOP
+      BEGIN
+         SQL_STMT := 'drop table ' || L_TGT_SCHEMA || '.' ||
+                     REPLACE(SUBSTR(CUR_REC.TABLE_NAME, 0, 30), '"', '');
+
+         --DBMS_OUTPUT.PUT_LINE('DROP SQL_STMT :' || SQL_STMT);
+         EXECUTE IMMEDIATE SQL_STMT;
+
+      EXCEPTION
+         WHEN OTHERS THEN
+            ERRMSG := SUBSTR(SQLERRM, 1, 2000);
+            UPDATE DWH_TB_COPY
+               SET CREATIONDATE = SYSDATE,
+                   STATUS       = 'NOK',
+                   ERRORMSG     = ERRMSG
+             WHERE TABLE_NAME = CUR_REC.TABLE_NAME;
+      END;
+
+      BEGIN
+         IF CUR_REC.SOURCEDB = 'ZYGO' THEN
+            L_TABLE := SUBSTR(CUR_REC.TABLE_NAME,
+                              6,
+                              LENGTH(CUR_REC.TABLE_NAME));
+         ELSE
+            L_TABLE := CUR_REC.TABLE_NAME;
+         END IF;
+
+         IF CUR_REC.SCHEMA IS NOT NULL THEN
+            L_SCHEMA := CUR_REC.SCHEMA || '.';
+         END IF;
+
+         IF CUR_REC.CONDITION IS NOT NULL THEN
+            L_CONDITION := 'Where ' || CUR_REC.CONDITION;
+         ELSE
+            L_CONDITION := 'Where 1 = 1';
+         END IF;
+
+         SQL_STMT := 'create table ' || L_TGT_SCHEMA || '.' ||
+                     REPLACE(SUBSTR(CUR_REC.TABLE_NAME, 0, 30), '"', '') ||
+                     '  as (select * from ' || L_SCHEMA || L_TABLE || '@' ||
+                     CUR_REC.SOURCEDB || ' ' || L_CONDITION || ')';
+
+         --DBMS_OUTPUT.PUT_LINE('SQL_STMT :' || SQL_STMT);
+         EXECUTE IMMEDIATE SQL_STMT;
+         L_COUNT := TO_CHAR(SQL%ROWCOUNT);
+
+         UPDATE DWH_TB_COPY
+            SET CREATIONDATE = SYSDATE,
+                STATUS       = 'OK',
+                ERRORMSG     = NULL,
+                ROW_COUNT    = L_COUNT
+          WHERE TABLE_NAME = CUR_REC.TABLE_NAME;
+
+      EXCEPTION
+         WHEN OTHERS THEN
+            ERRMSG := SUBSTR(SQLERRM, 1, 2000);
+
+            UPDATE DWH_TB_COPY
+               SET CREATIONDATE = SYSDATE,
+                   STATUS       = 'NOK',
+                   ERRORMSG     = ERRMSG
+             WHERE TABLE_NAME = CUR_REC.TABLE_NAME;
+      END;
+   END LOOP;
+   COMMIT;
+
+EXCEPTION
+   WHEN OTHERS THEN
+      ERRMSG := SUBSTR(SQLERRM, 1, 2000);
+      DBMS_OUTPUT.PUT_LINE('when others :' || ERRMSG);
+
+END SP_REFRESH_TB_COPY;
