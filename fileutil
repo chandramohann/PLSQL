@@ -1,0 +1,129 @@
+BEGIN
+UTL_FILE.FRENAME('SRC_DIR', 'GSM23405', 'DAT_DIR', 'GSMDATA', TRUE);
+END;
+
+BEGIN
+UTL_FILE.FRENAME('SRC_DIR', 'GPR23405', 'DAT_DIR', 'GPRSDATA', TRUE);
+END;
+
+/u01/app/oracle/oradata/CDR/cdrtoload
+
+-- Create directory 
+create or replace directory DAT_DIR as '/u01/app/oracle/oradata/CDR/data';
+
+create or replace directory SRC_DIR as '/u01/app/oracle/oradata/CDR/cdrtoload';
+
+grant read on directory SRC_DIR to cdr;
+
+grant write on directory SRC_DIR to cdr;
+
+BEGIN
+UTL_FILE.FRENAME('SRC_DIR', 'GSM23099', 'DAT_DIR', 'GSMDATA', TRUE);
+END;
+
+BEGIN
+UTL_FILE.FRENAME('BAD_DIR', 'GPR22951', 'DAT_DIR', 'GPRSDATA', TRUE);
+END;
+
+select cdrfilename,fileseq from cdrfilestatus
+
+TRUNCATE TABLE cdrfilestatus;
+
+
+BAD_DIR
+DAT_DIR
+LIST_DIR
+SRC_DIR
+LOG_DIR
+
+DROP DIRECTORY SRC_DIR;
+
+create or replace directory ext_dir as '/u01/oradata/CDR/cdrprod/data';
+
+grant read,write on directory ext_dir to skelet;
+
+create or replace directory DAT_DIR as '/u01/oradata/CDR/cdrprod/data';
+/
+grant read,write on directory DAT_DIR to cdr;
+/
+
+create or replace directory SRC_DIR as '/u01/oradata/CDR/cdrprod/cdrtoload';
+/
+grant read,write on directory SRC_DIR to cdr;
+/
+create or replace directory DAT_DIR as '/u01/oradata/CDR/cdrprod/data';
+/
+grant read,write on directory DAT_DIR to cdr;
+/
+create or replace directory LIST_DIR as '/u01/oradata/CDR/cdrprod/cdrlist';
+/
+grant read,write on directory LIST_DIR to cdr;
+/
+create or replace directory ZYGO_DIR as '/u01/oradata/CDR/cdrprod/zygo';
+/
+grant read,write on directory ZYGO_DIR to cdr;
+/
+
+create or replace directory DATADATE as '/u01/oradata/CDR/SKELTEST/datadate';
+/
+grant read,write on directory DATADATE to SKELET;
+/
+
+
+SETTING [CDR SCHEMA LEVEL] /CDRCONFIG [PATH,SEQRUN,TCN,LOGFILE] : DONE
+
+MONITOR [EPIC LEVEL] SKELET APP : DONE
+
+CDRLOG [FILENAME,FILESEQ,LOG_ID,STARTTIME,ENDTIME,STATUS] : DONE
+
+ERROR [LOG_ID,LINE] : DONE
+
+DEBUG [LOG_ID,] JULIANDATETIME+SEQNO : DONE
+
+INIT
+INIT []
+GVAR
+FILE OR TABLE [Y/N]
+EMAIL ERRORTABLE
+SEQ FOR LINENO
+
+table to file for email
+
+create table config 
+(conf_id number,
+key     varchar2(20),
+value   varchar2(200),
+module  varchar2(10));
+
+create table log 
+(log_id      number,
+pkcolumn     varchar2(20),
+reference    varchar2(50),
+startdate    date,
+enddate      date,
+status       varchar2(1));
+
+create table error 
+(log_id      number,
+line         number,
+err_code     varchar2(20),
+err_msg      varchar2(2000));
+
+create table debug 
+(log_id      number,
+line         number,
+ref          varchar2(50),
+info         varchar2(2000));
+
+
+log attachment full/error
+
+select case
+         when value = 'T' then
+          gIslogEnabled := true
+         else
+          gIslogEnabled := false
+       end;
+from config where key = 'IslogEnabled';
+
+
